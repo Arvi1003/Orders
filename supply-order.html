@@ -1,0 +1,958 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  .soa-root, .soa-root * { box-sizing: border-box; }
+  .soa-root {
+    --bg: #EEF1EE;
+    --surface: #FFFFFF;
+    --ink: #1B2A28;
+    --ink-soft: #5C6B67;
+    --accent: #F2A73B;
+    --accent-ink: #2A1B00;
+    --danger: #D6483F;
+    --success: #2F8F5B;
+    --line: #DCE1DC;
+    --radius: 16px;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    max-width: 460px;
+    margin: 0 auto;
+    min-height: 640px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .soa-hazard {
+    height: 8px;
+    width: 100%;
+    background: repeating-linear-gradient(135deg, var(--accent) 0 14px, var(--ink) 14px 28px);
+    flex-shrink: 0;
+  }
+  .soa-header {
+    padding: 18px 20px 14px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+  }
+  .soa-eyebrow {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .soa-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    margin-top: 2px;
+  }
+  .soa-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 16px 90px;
+  }
+  .soa-section-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 18px 4px 8px;
+  }
+  .soa-section-title:first-child { margin-top: 4px; }
+  .soa-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .soa-item.selected {
+    border-color: var(--accent);
+    background: #FFF8EC;
+  }
+  .soa-icon-tile {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    border-radius: 14px;
+    flex-shrink: 0;
+    color: var(--ink);
+  }
+  .soa-icon-tile svg { width: 34px; height: 34px; }
+  .soa-icon-tile img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+  .soa-icon-tile.small { width: 40px; height: 40px; border-radius: 10px; }
+  .soa-icon-tile.small svg { width: 22px; height: 22px; }
+  .soa-edit-panel {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 10px;
+    margin: 4px 0 10px;
+  }
+  .soa-edit-panel .row2 { display:flex; gap:8px; }
+  .soa-edit-panel .row2 .soa-field { flex:1; }
+  .soa-item-name {
+    flex: 1;
+    font-weight: 600;
+    font-size: 14.5px;
+    cursor: pointer;
+    min-width: 0;
+  }
+  .soa-item-name span.unit { display:block; font-weight:400; font-size:11.5px; color: var(--ink-soft); margin-top:1px; }
+  .soa-qty {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .soa-qty button {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    cursor: pointer;
+    line-height: 1;
+  }
+  .soa-qty button:active { background: var(--bg); }
+  .soa-qty .soa-qty-val {
+    width: 22px;
+    text-align: center;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .soa-bottombar {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    display: flex;
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+    gap: 4px;
+  }
+  .soa-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 0;
+    border: none;
+    background: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-radius: 10px;
+  }
+  .soa-tab.active { color: var(--accent-ink); background: #FFF3DE; }
+  .soa-tab svg { width: 18px; height: 18px; }
+
+  .soa-cta {
+    position: absolute;
+    left: 16px; right: 16px; bottom: 66px;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 14px;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  }
+  .soa-cta .count-badge {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-radius: 999px;
+    padding: 2px 9px;
+    font-size: 13px;
+  }
+
+  .soa-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+    border-radius: var(--radius);
+    padding: 14px;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  .soa-btn-primary { background: var(--success); color: #fff; }
+  .soa-btn-secondary { background: var(--ink); color: #fff; }
+  .soa-btn-outline { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+
+  .soa-review-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 4px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .soa-review-row .name { flex:1; }
+  .soa-review-row .qty { font-family: 'Oswald', sans-serif; font-weight: 600; color: var(--ink-soft); }
+
+  .soa-field { margin-bottom: 14px; }
+  .soa-field label {
+    display: block;
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 5px;
+  }
+  .soa-field input, .soa-field select {
+    width: 100%;
+    padding: 11px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    font-size: 14.5px;
+    font-family: 'Inter', sans-serif;
+    background: var(--surface);
+  }
+
+  .soa-empty {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 13.5px;
+    padding: 40px 20px;
+    line-height: 1.5;
+  }
+
+  .soa-total-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 8px 10px;
+    margin-bottom: 7px;
+  }
+  .soa-total-name { flex: 1; font-size: 13.5px; font-weight: 600; }
+  .soa-total-name span.unit { display:block; font-weight:400; font-size:11px; color:var(--ink-soft); }
+  .soa-total-num {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 3px 10px;
+    min-width: 34px;
+    text-align: center;
+  }
+  .soa-total-num.zero { color: var(--ink-soft); }
+
+  .soa-order-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .soa-order-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .soa-order-name { font-weight: 700; font-size: 14px; }
+  .soa-order-date { font-size: 11.5px; color: var(--ink-soft); }
+  .soa-order-items { font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+
+  .soa-manage-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 4px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .soa-manage-row .mname { flex: 1; }
+  .soa-manage-row .del {
+    color: var(--danger);
+    background: none;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .soa-back {
+    background: none; border: none; color: var(--ink-soft);
+    font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 12.5px;
+    letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer;
+    padding: 4px 0 12px; display: flex; align-items: center; gap: 4px;
+  }
+  .soa-toast {
+    position: absolute;
+    top: 14px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: #fff;
+    padding: 9px 16px; border-radius: 999px;
+    font-size: 13px; font-weight: 600;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+    z-index: 50;
+  }
+  .soa-gate {
+    position: absolute;
+    inset: 0;
+    background: var(--bg);
+    z-index: 40;
+    flex-direction: column;
+    justify-content: center;
+    padding: 28px 24px;
+  }
+  .soa-gate-title {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+  .soa-gate-sub {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  .soa-whoami {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 3px;
+  }
+  .soa-whoami button {
+    background: none; border: none;
+    color: var(--accent-ink);
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+    margin-left: 4px;
+  }
+  .soa-confirm {
+    text-align: center;
+    padding: 30px 10px 10px;
+  }
+  .soa-confirm-icon {
+    width: 68px; height: 68px;
+    border-radius: 50%;
+    background: #E4F3EA;
+    color: var(--success);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+  }
+  .soa-confirm-icon svg { width: 36px; height: 36px; }
+  .soa-confirm-title {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 21px;
+    margin-bottom: 6px;
+  }
+  .soa-confirm-sub {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .soa-confirm-list {
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 4px 14px;
+    margin-bottom: 22px;
+  }
+</style>
+
+<div class="soa-root" id="soaRoot">
+  <div class="soa-hazard"></div>
+  <div class="soa-gate" id="soaGate" style="display:none;"></div>
+  <div class="soa-header">
+    <div class="soa-eyebrow">Blanchardstown Cleaning Crew</div>
+    <div class="soa-title" id="soaTitle">Supply Order</div>
+    <div class="soa-whoami" id="soaWhoAmI"></div>
+  </div>
+  <div class="soa-body" id="soaBody">
+    <div class="soa-empty">Loading…</div>
+  </div>
+  <div class="soa-bottombar">
+    <button class="soa-tab active" data-tab="order" onclick="soaSetTab('order')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h3v2.2l1.8 1.3c.6.4.9 1.1.9 1.8V19a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8.3c0-.7.3-1.4.9-1.8L9 5.2V3Z"/></svg>
+      Order
+    </button>
+    <button class="soa-tab" data-tab="history" onclick="soaSetTab('history')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 12h16M4 19h9"/></svg>
+      History
+    </button>
+    <button class="soa-tab" data-tab="settings" onclick="soaSetTab('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.5-2-3.4-2.3.9a7.7 7.7 0 0 0-1.7-1L15 3.6h-6l-.4 2.4a7.7 7.7 0 0 0-1.7 1l-2.3-.9-2 3.4L4.6 11a7.6 7.6 0 0 0 0 2l-2 1.5 2 3.4 2.3-.9c.5.4 1.1.75 1.7 1L9 20.4h6l.4-2.4a7.7 7.7 0 0 0 1.7-1l2.3.9 2-3.4Z"/></svg>
+      Settings
+    </button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const ICONS = {
+    bottle: '<path d="M9 3h3v2.2l1.8 1.3c.6.4.9 1.1.9 1.8V19a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8.3c0-.7.3-1.4.9-1.8L9 5.2V3Z"/><path d="M7.5 12h6"/>',
+    spraycan: '<rect x="7" y="8" width="9" height="13" rx="1.5"/><path d="M9.5 8V5.5A1.5 1.5 0 0 1 11 4h1"/><path d="M13 4h2"/><path d="M4 9l1.5 1M4 12h2M4 15l1.5-1"/>',
+    glass: '<rect x="4" y="4" width="14" height="14" rx="1.5"/><path d="M11 4v14M4 11h14"/><path d="M18 16c1.4 1 2 2 2 3a2 2 0 1 1-4 0c0-1 .6-2 2-3Z"/>',
+    toilet: '<path d="M8 3h6v5H8z"/><path d="M7 8h10l-1 4H8z"/><path d="M8 12c-2 0-3.5 2-3.5 4.5S6 21 9 21h4c2.5 0 4.5-2 4.5-4.5S15.5 12 13 12"/>',
+    tube: '<path d="M9 3h6M10 3v4.5L6.5 15A3 3 0 0 0 9.3 19.5h5.4A3 3 0 0 0 17.5 15L14 7.5V3"/><path d="M8 15h8"/>',
+    drum: '<rect x="5" y="5" width="14" height="15" rx="2"/><path d="M5 10h14M5 15h14"/>',
+    pump: '<path d="M8 9h6v10a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2Z"/><path d="M10 9V6.5A1.5 1.5 0 0 1 11.5 5H12M14 4.5h3"/>',
+    freshener: '<rect x="8" y="9" width="8" height="11" rx="1.5"/><path d="M10.5 9V6h3v3"/><path d="M5 6l1.3 1M19 6l-1.3 1M4 3l1 1.6M20 3l-1 1.6"/>',
+    mop: '<path d="M15 3 8 15"/><path d="M6 15c-1.4.6-2 1.8-2 3 0 1.7 1.8 3 4 3s4-1.3 4-3c0-1.2-.6-2.4-2-3"/>',
+    bucket: '<path d="M5 8h14l-1.5 11a2 2 0 0 1-2 1.7H8.5A2 2 0 0 1 6.5 19Z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/>',
+    glove: '<path d="M7 11V5.5a1.5 1.5 0 0 1 3 0V10M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 10V5.5a1.5 1.5 0 0 1 3 0V12M16 12v-2a1.5 1.5 0 0 1 3 0v6a5 5 0 0 1-5 5h-3a5 5 0 0 1-5-5v-4c0-1 .8-2 2-2"/>',
+    mask: '<path d="M4 11c0-2.5 3.5-5 8-5s8 2.5 8 5-3.5 4-8 4-8-1.5-8-4Z"/><path d="M4 11c-1 .3-1.6 1-1.6 1.8M20 11c1 .3 1.6 1 1.6 1.8"/><path d="M8 11.5c1-.6 2.3-1 4-1s3 .4 4 1"/>',
+    binbag: '<path d="M6 8h12l-1 11.5a2 2 0 0 1-2 1.5H9a2 2 0 0 1-2-1.5Z"/><path d="M9 4h6l1 4H8Z"/><path d="M12 11v6"/>',
+    cloth: '<rect x="4" y="6" width="16" height="4" rx="1"/><rect x="4" y="12" width="16" height="4" rx="1"/><path d="M4 20h16"/>',
+    goggles: '<circle cx="7.5" cy="12" r="3.2"/><circle cx="16.5" cy="12" r="3.2"/><path d="M10.7 12h2.6"/><path d="M4.3 9.5 2 8M19.7 9.5 22 8"/>',
+    sign: '<path d="M12 3 2 20h20Z"/><path d="M12 9.5v5"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/>',
+    box: '<path d="M3 8l9-4 9 4-9 4-9-4Z"/><path d="M3 8v9l9 4 9-4V8"/><path d="M12 12v9"/>'
+  };
+  const ICON_LABELS = [
+    ['bottle','Bottle'], ['spraycan','Spray can'], ['glass','Glass cleaner'], ['toilet','Toilet brush'],
+    ['tube','Tube'], ['drum','Drum'], ['pump','Pump bottle'], ['freshener','Air freshener'],
+    ['mop','Mop'], ['bucket','Bucket'], ['glove','Glove'], ['mask','Mask'], ['binbag','Bin liner'],
+    ['cloth','Cloth'], ['goggles','Goggles'], ['sign','Warning sign'], ['box','Other']
+  ];
+  function iconSvg(key, cls){
+    const inner = ICONS[key] || ICONS.box;
+    return `<svg class="${cls||''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+  }
+  function tileInner(item){
+    if (item.img) return `<img src="${esc(item.img)}" alt="${esc(item.name)}" onerror="this.parentElement.innerHTML=iconSvgFallback('${item.icon||'box'}')">`;
+    return iconSvg(item.icon);
+  }
+  window.iconSvgFallback = function(key){ return iconSvg(key); };
+
+  function resizeImageFile(file, maxDim){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width, h = img.height;
+          if (w > h) { if (w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; } }
+          else { if (h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; } }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.72));
+        };
+        img.onerror = () => reject(new Error('bad image'));
+        img.src = e.target.result;
+      };
+      reader.onerror = () => reject(new Error('read failed'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  const DEFAULT_CATALOG = [
+    {id:'c1', cat:'Chemicals', name:'Multi-Surface Cleaner', unit:'bottles', icon:'bottle'},
+    {id:'c2', cat:'Chemicals', name:'Floor Cleaner', unit:'bottles', icon:'bottle'},
+    {id:'c3', cat:'Chemicals', name:'Glass & Window Cleaner', unit:'bottles', icon:'glass'},
+    {id:'c4', cat:'Chemicals', name:'Toilet / Washroom Cleaner', unit:'bottles', icon:'toilet'},
+    {id:'c5', cat:'Chemicals', name:'Disinfectant Spray', unit:'bottles', icon:'spraycan'},
+    {id:'c6', cat:'Chemicals', name:'Floor Degreaser', unit:'bottles', icon:'drum'},
+    {id:'c7', cat:'Chemicals', name:'Hand Soap', unit:'refills', icon:'pump'},
+    {id:'c8', cat:'Chemicals', name:'Air Freshener', unit:'cans', icon:'freshener'},
+    {id:'e1', cat:'Equipment', name:'Mop Head', unit:'pcs', icon:'mop'},
+    {id:'e2', cat:'Equipment', name:'Mop Bucket', unit:'pcs', icon:'bucket'},
+    {id:'e3', cat:'Equipment', name:'Disposable Gloves', unit:'boxes', icon:'glove'},
+    {id:'e4', cat:'Equipment', name:'Face Masks', unit:'boxes', icon:'mask'},
+    {id:'e5', cat:'Equipment', name:'Bin Liners', unit:'rolls', icon:'binbag'},
+    {id:'e6', cat:'Equipment', name:'Microfibre Cloths', unit:'packs', icon:'cloth'},
+    {id:'e7', cat:'Equipment', name:'Safety Goggles', unit:'pcs', icon:'goggles'},
+    {id:'e8', cat:'Equipment', name:'Wet Floor Sign', unit:'pcs', icon:'sign'}
+  ];
+
+  let catalog = [];
+  let config = { teamName: 'Blanchardstown Cleaning Crew', adminPin: '1234' };
+  let userName = '';
+  let orders = [];
+  let selected = {};
+  let tab = 'order';
+  let view = 'list'; // 'list' | 'review' | 'confirm'
+  let ready = false;
+  let sessionAuthed = false;
+  let pinError = '';
+  let pendingTab = 'settings';
+  let lastPlacedItems = [];
+  let editingId = null;
+
+  const body = document.getElementById('soaBody');
+  const root = document.getElementById('soaRoot');
+  const titleEl = document.getElementById('soaTitle');
+
+  function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function toast(msg){
+    const t = document.createElement('div');
+    t.className = 'soa-toast';
+    t.textContent = msg;
+    root.appendChild(t);
+    setTimeout(()=>t.remove(), 2200);
+  }
+
+  const gateEl = document.getElementById('soaGate');
+
+  function showNameGate(){
+    gateEl.style.display = 'flex';
+    gateEl.innerHTML = `
+      <div class="soa-gate-title">Who's ordering?</div>
+      <div class="soa-gate-sub">Enter your name so orders show who they're from. You'll only need to do this once on this phone.</div>
+      <div class="soa-field">
+        <label>Your name</label>
+        <input id="soaGateName" type="text" placeholder="e.g. Priya" />
+      </div>
+      <button class="soa-btn soa-btn-primary" onclick="soaSubmitName()">Continue</button>
+    `;
+    setTimeout(()=>{ const el=document.getElementById('soaGateName'); if(el) el.focus(); }, 50);
+  }
+
+  window.soaSubmitName = async function(){
+    const val = document.getElementById('soaGateName').value.trim();
+    if (!val) { toast('Enter your name to continue'); return; }
+    userName = val;
+    await saveUserName();
+    gateEl.style.display = 'none';
+    gateEl.innerHTML = '';
+    render();
+  };
+
+  window.soaChangeName = function(){
+    showNameGate();
+    setTimeout(()=>{ const el=document.getElementById('soaGateName'); if(el) el.value = userName; }, 0);
+  };
+
+  function updateWhoAmI(){
+    const el = document.getElementById('soaWhoAmI');
+    if (!el) return;
+    if (userName) {
+      el.innerHTML = `Ordering as: <strong>${esc(userName)}</strong> <button onclick="soaChangeName()">not you?</button>`;
+    } else {
+      el.innerHTML = '';
+    }
+  }
+
+  function showPinGate(){
+    gateEl.style.display = 'flex';
+    gateEl.innerHTML = `
+      <div class="soa-gate-title">Settings are locked</div>
+      <div class="soa-gate-sub">Enter the admin PIN to continue.${pinError ? '<br><span style="color:var(--danger)">'+esc(pinError)+'</span>' : ''}</div>
+      <div class="soa-field">
+        <label>Admin PIN</label>
+        <input id="soaGatePin" type="password" inputmode="numeric" placeholder="••••" />
+      </div>
+      <button class="soa-btn soa-btn-primary" onclick="soaSubmitPin()">Unlock</button>
+      <button class="soa-btn soa-btn-outline" onclick="soaCancelPin()">Cancel</button>
+    `;
+    setTimeout(()=>{ const el=document.getElementById('soaGatePin'); if(el) el.focus(); }, 50);
+  }
+
+  window.soaSubmitPin = function(){
+    const val = document.getElementById('soaGatePin').value.trim();
+    if (val === (config.adminPin || '1234')) {
+      sessionAuthed = true;
+      pinError = '';
+      gateEl.style.display = 'none';
+      gateEl.innerHTML = '';
+      tab = pendingTab;
+      render();
+    } else {
+      pinError = 'Wrong PIN, try again.';
+      showPinGate();
+    }
+  };
+
+  window.soaCancelPin = function(){
+    pinError = '';
+    gateEl.style.display = 'none';
+    gateEl.innerHTML = '';
+    tab = 'order';
+    render();
+  };
+
+  async function loadAll(){
+    try {
+      const c = await window.storage.get('catalog', true);
+      catalog = c ? JSON.parse(c.value) : DEFAULT_CATALOG;
+    } catch(e){ catalog = DEFAULT_CATALOG; }
+    if (!catalog.length) catalog = DEFAULT_CATALOG;
+    catalog.forEach(i => { if (!i.icon) i.icon = 'box'; });
+
+    try {
+      const cfg = await window.storage.get('config', true);
+      if (cfg) config = Object.assign({teamName:'Blanchardstown Cleaning Crew', adminPin:'1234'}, JSON.parse(cfg.value));
+    } catch(e){}
+
+    try {
+      const ord = await window.storage.get('orders', true);
+      orders = ord ? JSON.parse(ord.value) : [];
+    } catch(e){ orders = []; }
+
+    try {
+      const un = await window.storage.get('username', false);
+      if (un) userName = un.value;
+    } catch(e){}
+
+    ready = true;
+    if (!userName) { showNameGate(); } else { render(); }
+  }
+
+  async function saveCatalog(){
+    try { await window.storage.set('catalog', JSON.stringify(catalog), true); } catch(e){ toast('Could not save list'); }
+  }
+  async function saveConfig(){
+    try { await window.storage.set('config', JSON.stringify(config), true); } catch(e){ toast('Could not save settings'); }
+  }
+  async function saveOrders(){
+    try { await window.storage.set('orders', JSON.stringify(orders), true); } catch(e){ toast('Could not save order'); }
+  }
+  async function saveUserName(){
+    try { await window.storage.set('username', userName, false); } catch(e){}
+  }
+
+  window.soaSetTab = function(t){
+    if ((t === 'settings' || t === 'history') && !sessionAuthed) {
+      pendingTab = t;
+      document.querySelectorAll('.soa-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+      showPinGate();
+      return;
+    }
+    tab = t; view = 'list';
+    render();
+  };
+
+  function renderOrderList(){
+    titleEl.textContent = 'Supply Order';
+    const cats = [...new Set(catalog.map(i=>i.cat))];
+    let html = '';
+    cats.forEach(cat => {
+      html += `<div class="soa-section-title">${esc(cat)}</div>`;
+      catalog.filter(i=>i.cat===cat).forEach(item => {
+        const qty = selected[item.id] || 0;
+        html += `
+          <div class="soa-item ${qty>0?'selected':''}">
+            <div class="soa-icon-tile">${tileInner(item)}</div>
+            <div class="soa-item-name" onclick="soaToggle('${item.id}')">
+              ${esc(item.name)}<span class="unit">${esc(item.unit)}</span>
+            </div>
+            <div class="soa-qty">
+              <button onclick="soaDec('${item.id}')">−</button>
+              <div class="soa-qty-val">${qty}</div>
+              <button onclick="soaInc('${item.id}')">+</button>
+            </div>
+          </div>`;
+      });
+    });
+    body.innerHTML = html;
+    const n = Object.keys(selected).filter(k=>selected[k]>0).length;
+    let cta = document.getElementById('soaCta');
+    if (cta) cta.remove();
+    if (n > 0) {
+      cta = document.createElement('button');
+      cta.id = 'soaCta';
+      cta.className = 'soa-cta';
+      cta.innerHTML = `Review Order <span class="count-badge">${n} item${n>1?'s':''}</span>`;
+      cta.onclick = () => { view='review'; render(); };
+      root.appendChild(cta);
+    }
+  }
+
+  window.soaToggle = function(id){
+    if (selected[id]) delete selected[id];
+    else selected[id] = 1;
+    render();
+  };
+  window.soaInc = function(id){
+    selected[id] = (selected[id]||0) + 1;
+    render();
+  };
+  window.soaDec = function(id){
+    if (!selected[id]) return;
+    selected[id] -= 1;
+    if (selected[id] <= 0) delete selected[id];
+    render();
+  };
+
+  function renderReview(){
+    titleEl.textContent = 'Review Order';
+    const rows = Object.keys(selected).map(id => {
+      const item = catalog.find(i=>i.id===id);
+      return `<div class="soa-review-row"><div class="soa-icon-tile small">${tileInner(item)}</div><span class="name">${esc(item.name)}</span><span class="qty">${selected[id]} ${esc(item.unit)}</span></div>`;
+    }).join('');
+
+    body.innerHTML = `
+      <button class="soa-back" onclick="soaBackToList()">← Back to list</button>
+      <div class="soa-field">
+        <label>Your name</label>
+        <input id="soaNameInput" type="text" placeholder="e.g. Aravinth" value="${esc(userName)}" />
+      </div>
+      ${rows}
+      <div style="height:16px"></div>
+      <button class="soa-btn soa-btn-primary" onclick="soaPlaceOrder()">Place Order</button>
+    `;
+    document.getElementById('soaNameInput').addEventListener('input', (e) => {
+      userName = e.target.value;
+      saveUserName();
+    });
+  }
+
+  window.soaBackToList = function(){ view = 'list'; render(); };
+
+  window.soaPlaceOrder = async function(){
+    const items = Object.keys(selected).map(id => {
+      const item = catalog.find(i=>i.id===id);
+      return { name: item.name, qty: selected[id], unit: item.unit, cat: item.cat };
+    });
+    orders.unshift({ name: userName || 'Unnamed', date: new Date().toISOString(), items });
+    await saveOrders();
+    lastPlacedItems = items;
+    selected = {};
+    view = 'confirm';
+    render();
+  };
+
+  function renderConfirm(){
+    titleEl.textContent = 'Supply Order';
+    const rows = lastPlacedItems.map(i => `<div class="soa-review-row"><span class="name">${esc(i.name)}</span><span class="qty">${i.qty} ${esc(i.unit)}</span></div>`).join('');
+    body.innerHTML = `
+      <div class="soa-confirm">
+        <div class="soa-confirm-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+        <div class="soa-confirm-title">Order Placed</div>
+        <div class="soa-confirm-sub">Logged for ${esc(userName)}. Your supervisor can see it under History.</div>
+        <div class="soa-confirm-list">${rows}</div>
+        <button class="soa-btn soa-btn-secondary" onclick="soaNewOrder()">Place Another Order</button>
+      </div>
+    `;
+  }
+
+  window.soaNewOrder = function(){
+    view = 'list'; tab = 'order';
+    render();
+  };
+
+  function computeTotals(){
+    const map = {};
+    catalog.forEach(i => { map[i.name] = { name: i.name, unit: i.unit, cat: i.cat, icon: i.icon, img: i.img, qty: 0 }; });
+    orders.forEach(o => {
+      o.items.forEach(i => {
+        if (!map[i.name]) map[i.name] = { name: i.name, unit: i.unit, cat: i.cat || 'Other', icon: 'box', qty: 0 };
+        map[i.name].qty += i.qty;
+      });
+    });
+    return Object.values(map).sort((a,b) => (a.cat||'').localeCompare(b.cat||'') || a.name.localeCompare(b.name));
+  }
+
+  function renderHistory(){
+    titleEl.textContent = 'Order History';
+    const totals = computeTotals();
+    let html = `<div class="soa-section-title">Total Ordered (all time)</div>`;
+    let curCat = null;
+    totals.forEach(t => {
+      if (t.cat !== curCat) { curCat = t.cat; html += `<div style="font-size:11.5px;font-weight:600;color:var(--ink-soft);margin:8px 4px 4px;">${esc(curCat||'Other')}</div>`; }
+      html += `
+        <div class="soa-total-row">
+          <div class="soa-icon-tile small">${tileInner(t)}</div>
+          <div class="soa-total-name">${esc(t.name)}<span class="unit">${esc(t.unit)}</span></div>
+          <div class="soa-total-num ${t.qty===0?'zero':''}">${t.qty}</div>
+        </div>`;
+    });
+
+    html += `<div class="soa-section-title">Recent Orders</div>`;
+    if (!orders.length) {
+      html += `<div class="soa-empty">No orders placed yet.</div>`;
+    } else {
+      orders.slice(0, 60).forEach(o => {
+        const d = new Date(o.date);
+        const dateStr = d.toLocaleDateString('en-IE', {day:'2-digit', month:'short'}) + ' · ' + d.toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'});
+        const itemsStr = o.items.map(i => `${i.name} (${i.qty} ${i.unit})`).join(', ');
+        html += `
+          <div class="soa-order-card">
+            <div class="soa-order-head">
+              <span class="soa-order-name">${esc(o.name)}</span>
+              <span class="soa-order-date">${dateStr}</span>
+            </div>
+            <div class="soa-order-items">${esc(itemsStr)}</div>
+          </div>`;
+      });
+    }
+    body.innerHTML = html;
+  }
+
+  function renderSettings(){
+    titleEl.textContent = 'Settings';
+    body.innerHTML = `
+      <div class="soa-field">
+        <label>Admin PIN (protects this Settings screen)</label>
+        <input id="soaPin" type="text" placeholder="4-digit PIN" value="${esc(config.adminPin || '1234')}" />
+      </div>
+      <button class="soa-btn soa-btn-secondary" onclick="soaSaveSettings()">Save PIN</button>
+
+      <div class="soa-section-title">Item List</div>
+      <div id="soaManageList"></div>
+      <div class="soa-field" style="margin-top:8px;">
+        <label>Add item</label>
+        <input id="soaNewName" type="text" placeholder="Item name" style="margin-bottom:8px;" />
+        <select id="soaNewCat" style="margin-bottom:8px;">
+          <option>Chemicals</option>
+          <option>Equipment</option>
+        </select>
+        <input id="soaNewUnit" type="text" placeholder="Unit (e.g. bottles, pcs)" style="margin-bottom:8px;" />
+        <input id="soaNewImg" type="text" placeholder="Image URL (optional)" style="margin-bottom:8px;" />
+        <label style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-soft);display:block;margin-bottom:5px;">Or take/upload a photo</label>
+        <input id="soaNewImgFile" type="file" accept="image/*" capture="environment" style="margin-bottom:8px;width:100%;" />
+        <select id="soaNewIcon">
+          ${ICON_LABELS.map(([k,l]) => `<option value="${k}">${l}</option>`).join('')}
+        </select>
+      </div>
+      <div style="font-size:11.5px;color:var(--ink-soft);margin:-4px 0 12px;line-height:1.5;">
+        A photo you take overrides the link above. Leave both blank to use a plain icon instead.
+      </div>
+      <button class="soa-btn soa-btn-outline" onclick="soaAddItem()">+ Add to list</button>
+    `;
+    renderManageList();
+  }
+
+  function renderManageList(){
+    const el = document.getElementById('soaManageList');
+    if (!el) return;
+    el.innerHTML = catalog.map(item => {
+      const row = `
+        <div class="soa-manage-row">
+          <div class="soa-icon-tile small">${tileInner(item)}</div>
+          <span class="mname">${esc(item.name)}</span>
+          <button class="del" style="color:var(--ink-soft);margin-right:10px;" onclick="soaEditItem('${item.id}')">${editingId===item.id?'Close':'Edit'}</button>
+          <button class="del" onclick="soaRemoveItem('${item.id}')">Remove</button>
+        </div>`;
+      const panel = editingId === item.id ? `
+        <div class="soa-edit-panel">
+          <div class="soa-field">
+            <label>Image URL</label>
+            <input id="soaEditImg-${item.id}" type="text" placeholder="Paste a photo link" value="${esc(item.img && item.img.startsWith('data:') ? '' : (item.img||''))}" />
+          </div>
+          <div class="soa-field">
+            <label>Or take/upload a photo</label>
+            <input id="soaEditImgFile-${item.id}" type="file" accept="image/*" capture="environment" style="width:100%;" />
+          </div>
+          <button class="soa-btn soa-btn-secondary" style="margin-bottom:0;" onclick="soaSaveEditItem('${item.id}')">Save Photo</button>
+        </div>` : '';
+      return row + panel;
+    }).join('');
+  }
+
+  window.soaEditItem = function(id){
+    editingId = editingId === id ? null : id;
+    renderManageList();
+  };
+
+  window.soaSaveEditItem = async function(id){
+    const item = catalog.find(i => i.id === id);
+    if (!item) return;
+    const fileInput = document.getElementById('soaEditImgFile-'+id);
+    const urlVal = document.getElementById('soaEditImg-'+id).value.trim();
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      try {
+        item.img = await resizeImageFile(fileInput.files[0], 420);
+      } catch(e) { toast('Could not read that photo'); return; }
+    } else if (urlVal) {
+      item.img = urlVal;
+    } else {
+      delete item.img;
+    }
+    await saveCatalog();
+    editingId = null;
+    renderManageList();
+    toast('Photo updated');
+  };
+
+  window.soaSaveSettings = async function(){
+    const pinVal = document.getElementById('soaPin').value.trim();
+    if (pinVal) config.adminPin = pinVal;
+    await saveConfig();
+    toast('Settings saved');
+  };
+
+  window.soaAddItem = async function(){
+    const name = document.getElementById('soaNewName').value.trim();
+    const cat = document.getElementById('soaNewCat').value;
+    const unit = document.getElementById('soaNewUnit').value.trim() || 'pcs';
+    const urlVal = document.getElementById('soaNewImg').value.trim();
+    const fileInput = document.getElementById('soaNewImgFile');
+    const icon = document.getElementById('soaNewIcon').value || 'box';
+    if (!name) { toast('Enter an item name'); return; }
+    const newItem = { id: 'i' + Date.now(), cat, name, unit, icon };
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      try {
+        newItem.img = await resizeImageFile(fileInput.files[0], 420);
+      } catch(e) { toast('Could not read that photo'); }
+    } else if (urlVal) {
+      newItem.img = urlVal;
+    }
+    catalog.push(newItem);
+    await saveCatalog();
+    renderSettings();
+    toast('Item added');
+  };
+
+  window.soaRemoveItem = async function(id){
+    catalog = catalog.filter(i => i.id !== id);
+    await saveCatalog();
+    renderManageList();
+  };
+
+  function render(){
+    if (!ready) { body.innerHTML = '<div class="soa-empty">Loading…</div>'; return; }
+    updateWhoAmI();
+    document.querySelectorAll('.soa-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    const oldCta = document.getElementById('soaCta');
+    if (oldCta) oldCta.remove();
+    if (tab === 'order') {
+      if (view === 'confirm') renderConfirm();
+      else if (view === 'review') renderReview();
+      else renderOrderList();
+    } else if (tab === 'history') {
+      renderHistory();
+    } else if (tab === 'settings') {
+      renderSettings();
+    }
+  }
+
+  loadAll();
+})();
+</script>
