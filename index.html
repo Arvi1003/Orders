@@ -449,12 +449,77 @@
     render();
   };
 
+  function getWeekBounds(){
+    const now = new Date();
+    const day = now.getDay(); // 0=Sun..6=Sat
+    const diff = (day === 0 ? -6 : 1 - day); // days back to Monday
+    const monday = new Date(now);
+    monday.setHours(0,0,0,0);
+    monday.setDate(now.getDate() + diff);
+    const nextMonday = new Date(monday);
+    nextMonday.setDate(monday.getDate() + 7);
+    return { monday, nextMonday };
+  }
+
+  function weekLabelText(monday, nextMonday){
+    const sunday = new Date(nextMonday.getTime() - 86400000);
+    return monday.toLocaleDateString('en-IE', {day:'2-digit', month:'short'}) + ' – ' + sunday.toLocaleDateString('en-IE', {day:'2-digit', month:'short'});
+  }
+
+  function buildWeeklyText(weeklyOrders, monday, nextMonday){
+    const totals = computeTotals(weeklyOrders).filter(t => t.qty > 0);
+    let text = `Weekly Supply Totals (${weekLabelText(monday, nextMonday)})\n`;
+    if (!totals.length) { return text + '\nNothing ordered this week.'; }
+    let curCat = null;
+    totals.forEach(t => {
+      if (t.cat !== curCat) { curCat = t.cat; text += `\n${curCat}:\n`; }
+      text += `- ${t.name}: ${t.qty} ${t.unit}\n`;
+    });
+    return text.trim();
+  }
+
+  window.soaShareWeekly = async function(){
+    const { monday, nextMonday } = getWeekBounds();
+    const weeklyOrders = orders.filter(o => { const od = new Date(o.date); return od >= monday && od < nextMonday; });
+    const text = buildWeeklyText(weeklyOrders, monday, nextMonday);
+    if (navigator.share) {
+      try { await navigator.share({ title: 'Weekly Supply Totals', text }); }
+      catch(e) { /* user cancelled the share sheet, ignore */ }
+    } else if (navigator.clipboard) {
+      try { await navigator.clipboard.writeText(text); toast('Copied — paste it into WhatsApp, Messages, or an email.'); }
+      catch(e) { toast('Could not copy — try long-pressing the list to copy it manually'); }
+    } else {
+      toast('Sharing is not supported in this browser');
+    }
+  };
+
   function renderHistory(){
     titleEl.textContent = 'Order History';
+    const { monday, nextMonday } = getWeekBounds();
+    const weeklyOrders = orders.filter(o => { const od = new Date(o.date); return od >= monday && od < nextMonday; });
+    const weeklyTotals = computeTotals(weeklyOrders).filter(t => t.qty > 0);
+
+    let html = `<div class="soa-section-title">This Week (${weekLabelText(monday, nextMonday)})</div>`;
+    if (!weeklyTotals.length) {
+      html += `<div class="soa-empty" style="padding:14px 4px;">Nothing ordered yet this week.</div>`;
+    } else {
+      let wCurCat = null;
+      weeklyTotals.forEach(t => {
+        if (t.cat !== wCurCat) { wCurCat = t.cat; html += `<div style="font-size:11.5px;font-weight:600;color:var(--ink-soft);margin:8px 4px 4px;">${esc(wCurCat||'Other')}</div>`; }
+        html += `
+          <div class="soa-total-row">
+            <div class="soa-icon-tile small">${tileInner(t)}</div>
+            <div class="soa-total-name">${esc(t.name)}<span class="unit">${esc(t.unit)}</span></div>
+            <div class="soa-total-num">${t.qty}</div>
+          </div>`;
+      });
+    }
+    html += `<button class="soa-btn soa-btn-primary" style="margin-top:8px;" onclick="soaShareWeekly()">Send This Week's List</button>`;
+
     const filtered = dayFilter === 'all' ? orders : orders.filter(o => new Date(o.date).getDay() === dayFilter);
     const dayLabel = DAY_CHIPS.find(([v]) => v === dayFilter)[1];
 
-    let html = `<div class="soa-daychips">`;
+    html += `<div class="soa-daychips" style="margin-top:6px;">`;
     DAY_CHIPS.forEach(([v,l]) => {
       html += `<button class="soa-daychip ${dayFilter===v?'active':''}" onclick="soaSetDayFilter('${v}')">${l}</button>`;
     });
