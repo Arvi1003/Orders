@@ -1,6 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supply Order — Blanchardstown Cleaning Crew</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
-
+  body { margin:0; padding:16px; background:#DADFDC; }
   .soa-root, .soa-root * { box-sizing: border-box; }
   .soa-root {
     --bg: #EEF1EE;
@@ -26,374 +32,77 @@
     position: relative;
     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   }
-  .soa-hazard {
-    height: 8px;
-    width: 100%;
-    background: repeating-linear-gradient(135deg, var(--accent) 0 14px, var(--ink) 14px 28px);
-    flex-shrink: 0;
-  }
-  .soa-header {
-    padding: 18px 20px 14px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--line);
-  }
-  .soa-eyebrow {
-    font-family: 'Oswald', sans-serif;
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    font-weight: 600;
-  }
-  .soa-title {
-    font-family: 'Oswald', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    margin-top: 2px;
-  }
-  .soa-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 14px 16px 90px;
-  }
-  .soa-section-title {
-    font-family: 'Oswald', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    margin: 18px 4px 8px;
-  }
+  .soa-hazard { height: 8px; width: 100%; background: repeating-linear-gradient(135deg, var(--accent) 0 14px, var(--ink) 14px 28px); flex-shrink: 0; }
+  .soa-header { padding: 18px 20px 14px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .soa-eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; }
+  .soa-title { font-size: 22px; font-weight: 700; letter-spacing: 0.01em; margin-top: 2px; }
+  .soa-body { flex: 1; overflow-y: auto; padding: 14px 16px 90px; }
+  .soa-section-title { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); margin: 18px 4px 8px; }
   .soa-section-title:first-child { margin-top: 4px; }
-  .soa-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    transition: border-color 0.15s, background 0.15s;
-  }
-  .soa-item.selected {
-    border-color: var(--accent);
-    background: #FFF8EC;
-  }
-  .soa-icon-tile {
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg);
-    border-radius: 14px;
-    flex-shrink: 0;
-    color: var(--ink);
-  }
+  .soa-item { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px; }
+  .soa-item.selected { border-color: var(--accent); background: #FFF8EC; }
+  .soa-icon-tile { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: var(--bg); border-radius: 14px; flex-shrink: 0; color: var(--ink); overflow:hidden; }
   .soa-icon-tile svg { width: 34px; height: 34px; }
-  .soa-icon-tile img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+  .soa-icon-tile img { width: 100%; height: 100%; object-fit: cover; }
   .soa-icon-tile.small { width: 40px; height: 40px; border-radius: 10px; }
   .soa-icon-tile.small svg { width: 22px; height: 22px; }
-  .soa-edit-panel {
-    background: var(--bg);
-    border-radius: 12px;
-    padding: 10px;
-    margin: 4px 0 10px;
-  }
-  .soa-edit-panel .row2 { display:flex; gap:8px; }
-  .soa-edit-panel .row2 .soa-field { flex:1; }
-  .soa-item-name {
-    flex: 1;
-    font-weight: 600;
-    font-size: 14.5px;
-    cursor: pointer;
-    min-width: 0;
-  }
+  .soa-edit-panel { background: var(--bg); border-radius: 12px; padding: 10px; margin: 4px 0 10px; }
+  .soa-item-name { flex: 1; font-weight: 600; font-size: 14.5px; cursor: pointer; min-width: 0; }
   .soa-item-name span.unit { display:block; font-weight:400; font-size:11.5px; color: var(--ink-soft); margin-top:1px; }
-  .soa-qty {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-  }
-  .soa-qty button {
-    width: 28px; height: 28px;
-    border-radius: 8px;
-    border: 1px solid var(--line);
-    background: var(--surface);
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--ink);
-    cursor: pointer;
-    line-height: 1;
-  }
-  .soa-qty button:active { background: var(--bg); }
-  .soa-qty .soa-qty-val {
-    width: 22px;
-    text-align: center;
-    font-family: 'Oswald', sans-serif;
-    font-weight: 600;
-    font-size: 15px;
-  }
-  .soa-bottombar {
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    background: var(--surface);
-    border-top: 1px solid var(--line);
-    display: flex;
-    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-    gap: 4px;
-  }
-  .soa-tab {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    padding: 6px 0;
-    border: none;
-    background: none;
-    font-family: 'Inter', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--ink-soft);
-    cursor: pointer;
-    border-radius: 10px;
-  }
+  .soa-qty { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .soa-qty button { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-size: 16px; font-weight: 700; color: var(--ink); cursor: pointer; line-height: 1; }
+  .soa-qty .soa-qty-val { width: 22px; text-align: center; font-weight: 600; font-size: 15px; }
+  .soa-bottombar { position: absolute; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); display: flex; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); gap: 4px; }
+  .soa-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; border: none; background: none; font-size: 11px; font-weight: 600; color: var(--ink-soft); cursor: pointer; border-radius: 10px; }
   .soa-tab.active { color: var(--accent-ink); background: #FFF3DE; }
   .soa-tab svg { width: 18px; height: 18px; }
-
-  .soa-cta {
-    position: absolute;
-    left: 16px; right: 16px; bottom: 66px;
-    background: var(--ink);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    padding: 14px;
-    font-family: 'Oswald', sans-serif;
-    font-weight: 600;
-    font-size: 15px;
-    letter-spacing: 0.02em;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
-  }
-  .soa-cta .count-badge {
-    background: var(--accent);
-    color: var(--accent-ink);
-    border-radius: 999px;
-    padding: 2px 9px;
-    font-size: 13px;
-  }
-
-  .soa-btn {
-    display: block;
-    width: 100%;
-    text-align: center;
-    text-decoration: none;
-    border-radius: var(--radius);
-    padding: 14px;
-    font-family: 'Oswald', sans-serif;
-    font-weight: 600;
-    font-size: 15px;
-    letter-spacing: 0.02em;
-    border: none;
-    cursor: pointer;
-    margin-bottom: 10px;
-  }
+  .soa-cta { position: absolute; left: 16px; right: 16px; bottom: 66px; background: var(--ink); color: #fff; border: none; border-radius: var(--radius); padding: 14px; font-weight: 600; font-size: 15px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.18); }
+  .soa-cta .count-badge { background: var(--accent); color: var(--accent-ink); border-radius: 999px; padding: 2px 9px; font-size: 13px; }
+  .soa-btn { display: block; width: 100%; text-align: center; text-decoration: none; border-radius: var(--radius); padding: 14px; font-weight: 600; font-size: 15px; border: none; cursor: pointer; margin-bottom: 10px; }
   .soa-btn-primary { background: var(--success); color: #fff; }
   .soa-btn-secondary { background: var(--ink); color: #fff; }
   .soa-btn-outline { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
-
-  .soa-review-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 9px 4px;
-    border-bottom: 1px solid var(--line);
-    font-size: 14px;
-  }
+  .soa-review-row { display: flex; align-items: center; gap: 10px; padding: 9px 4px; border-bottom: 1px solid var(--line); font-size: 14px; }
   .soa-review-row .name { flex:1; }
-  .soa-review-row .qty { font-family: 'Oswald', sans-serif; font-weight: 600; color: var(--ink-soft); }
-
+  .soa-review-row .qty { font-weight: 600; color: var(--ink-soft); }
   .soa-field { margin-bottom: 14px; }
-  .soa-field label {
-    display: block;
-    font-family: 'Oswald', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    margin-bottom: 5px;
-  }
-  .soa-field input, .soa-field select {
-    width: 100%;
-    padding: 11px 12px;
-    border-radius: 10px;
-    border: 1px solid var(--line);
-    font-size: 14.5px;
-    font-family: 'Inter', sans-serif;
-    background: var(--surface);
-  }
-
-  .soa-empty {
-    text-align: center;
-    color: var(--ink-soft);
-    font-size: 13.5px;
-    padding: 40px 20px;
-    line-height: 1.5;
-  }
-
-  .soa-total-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 8px 10px;
-    margin-bottom: 7px;
-  }
+  .soa-field label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 5px; }
+  .soa-field input, .soa-field select { width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); font-size: 14.5px; background: var(--surface); }
+  .soa-empty { text-align: center; color: var(--ink-soft); font-size: 13.5px; padding: 40px 20px; line-height: 1.5; }
+  .soa-total-row { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; margin-bottom: 7px; }
   .soa-total-name { flex: 1; font-size: 13.5px; font-weight: 600; }
   .soa-total-name span.unit { display:block; font-weight:400; font-size:11px; color:var(--ink-soft); }
-  .soa-total-num {
-    font-family: 'Oswald', sans-serif;
-    font-weight: 700;
-    font-size: 17px;
-    background: var(--bg);
-    border-radius: 8px;
-    padding: 3px 10px;
-    min-width: 34px;
-    text-align: center;
-  }
+  .soa-total-num { font-weight: 700; font-size: 17px; background: var(--bg); border-radius: 8px; padding: 3px 10px; min-width: 34px; text-align: center; }
   .soa-total-num.zero { color: var(--ink-soft); }
-
-  .soa-order-card {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 12px 14px;
-    margin-bottom: 10px;
-  }
-  .soa-order-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 6px;
-  }
+  .soa-order-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 10px; }
+  .soa-order-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
   .soa-order-name { font-weight: 700; font-size: 14px; }
   .soa-order-date { font-size: 11.5px; color: var(--ink-soft); }
   .soa-order-items { font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
-
-  .soa-manage-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 4px;
-    border-bottom: 1px solid var(--line);
-    font-size: 14px;
-  }
+  .soa-manage-row { display: flex; align-items: center; gap: 10px; padding: 8px 4px; border-bottom: 1px solid var(--line); font-size: 14px; }
   .soa-manage-row .mname { flex: 1; }
-  .soa-manage-row .del {
-    color: var(--danger);
-    background: none;
-    border: none;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .soa-back {
-    background: none; border: none; color: var(--ink-soft);
-    font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 12.5px;
-    letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer;
-    padding: 4px 0 12px; display: flex; align-items: center; gap: 4px;
-  }
-  .soa-toast {
-    position: absolute;
-    top: 14px; left: 50%; transform: translateX(-50%);
-    background: var(--ink); color: #fff;
-    padding: 9px 16px; border-radius: 999px;
-    font-size: 13px; font-weight: 600;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.2);
-    z-index: 50;
-  }
-  .soa-gate {
-    position: absolute;
-    inset: 0;
-    background: var(--bg);
-    z-index: 40;
-    flex-direction: column;
-    justify-content: center;
-    padding: 28px 24px;
-  }
-  .soa-gate-title {
-    font-family: 'Oswald', sans-serif;
-    font-weight: 700;
-    font-size: 20px;
-    margin-bottom: 6px;
-  }
-  .soa-gate-sub {
-    font-size: 13px;
-    color: var(--ink-soft);
-    margin-bottom: 18px;
-    line-height: 1.5;
-  }
-  .soa-whoami {
-    font-size: 12px;
-    color: var(--ink-soft);
-    margin-top: 3px;
-  }
-  .soa-whoami button {
-    background: none; border: none;
-    color: var(--accent-ink);
-    font-weight: 600;
-    text-decoration: underline;
-    cursor: pointer;
-    font-size: 12px;
-    padding: 0;
-    margin-left: 4px;
-  }
-  .soa-confirm {
-    text-align: center;
-    padding: 30px 10px 10px;
-  }
-  .soa-confirm-icon {
-    width: 68px; height: 68px;
-    border-radius: 50%;
-    background: #E4F3EA;
-    color: var(--success);
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 16px;
-  }
+  .soa-manage-row .del { color: var(--danger); background: none; border: none; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .soa-back { background: none; border: none; color: var(--ink-soft); font-weight: 600; font-size: 12.5px; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; padding: 4px 0 12px; display: flex; align-items: center; gap: 4px; }
+  .soa-toast { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 9px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,0.2); z-index: 50; }
+  .soa-gate { position: absolute; inset: 0; background: var(--bg); z-index: 40; flex-direction: column; justify-content: center; padding: 28px 24px; }
+  .soa-gate-title { font-weight: 700; font-size: 20px; margin-bottom: 6px; }
+  .soa-gate-sub { font-size: 13px; color: var(--ink-soft); margin-bottom: 18px; line-height: 1.5; }
+  .soa-whoami { font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
+  .soa-whoami button { background: none; border: none; color: var(--accent-ink); font-weight: 600; text-decoration: underline; cursor: pointer; font-size: 12px; padding: 0; margin-left: 4px; }
+  .soa-confirm { text-align: center; padding: 30px 10px 10px; }
+  .soa-confirm-icon { width: 68px; height: 68px; border-radius: 50%; background: #E4F3EA; color: var(--success); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
   .soa-confirm-icon svg { width: 36px; height: 36px; }
-  .soa-confirm-title {
-    font-family: 'Oswald', sans-serif;
-    font-weight: 700;
-    font-size: 21px;
-    margin-bottom: 6px;
-  }
-  .soa-confirm-sub {
-    font-size: 13.5px;
-    color: var(--ink-soft);
-    margin-bottom: 20px;
-    line-height: 1.5;
-  }
-  .soa-confirm-list {
-    text-align: left;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 4px 14px;
-    margin-bottom: 22px;
-  }
+  .soa-confirm-title { font-weight: 700; font-size: 21px; margin-bottom: 6px; }
+  .soa-confirm-sub { font-size: 13.5px; color: var(--ink-soft); margin-bottom: 20px; line-height: 1.5; }
+  .soa-confirm-list { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 4px 14px; margin-bottom: 22px; }
+  .soa-daychips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 4px; }
+  .soa-daychip { flex-shrink:0; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 12.5px; font-weight: 600; cursor: pointer; color: var(--ink-soft); }
+  .soa-daychip.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .soa-setup { padding: 30px 22px; font-size: 13.5px; line-height: 1.6; }
+  .soa-setup code { background: var(--bg); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
 </style>
+</head>
+<body>
 
 <div class="soa-root" id="soaRoot">
   <div class="soa-hazard"></div>
@@ -424,6 +133,15 @@
 
 <script>
 (function(){
+  // ============================================================
+  // PASTE YOUR SUPABASE PROJECT DETAILS HERE (Settings > API in Supabase)
+  const SUPABASE_URL = 'https://idarxuucuqwbuhujwyja.supabase.co/rest/v1/';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkYXJ4dXVjdXF3YnVodWp3eWphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5NTk5NjYsImV4cCI6MjEwMjUzNTk2Nn0.alkbhXGiKRx2kuxkaSzOBz6uG9eFvE-XP75QPX8zWhc';
+  // ============================================================
+
+  const NOT_CONFIGURED = !SUPABASE_URL || SUPABASE_URL.indexOf('PASTE_YOUR') > -1;
+  const sb = NOT_CONFIGURED ? null : window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
   const ICONS = {
     bottle: '<path d="M9 3h3v2.2l1.8 1.3c.6.4.9 1.1.9 1.8V19a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8.3c0-.7.3-1.4.9-1.8L9 5.2V3Z"/><path d="M7.5 12h6"/>',
     spraycan: '<rect x="7" y="8" width="9" height="13" rx="1.5"/><path d="M9.5 8V5.5A1.5 1.5 0 0 1 11 4h1"/><path d="M13 4h2"/><path d="M4 9l1.5 1M4 12h2M4 15l1.5-1"/>',
@@ -449,9 +167,9 @@
     ['mop','Mop'], ['bucket','Bucket'], ['glove','Glove'], ['mask','Mask'], ['binbag','Bin liner'],
     ['cloth','Cloth'], ['goggles','Goggles'], ['sign','Warning sign'], ['box','Other']
   ];
-  function iconSvg(key, cls){
+  function iconSvg(key){
     const inner = ICONS[key] || ICONS.box;
-    return `<svg class="${cls||''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
   }
   function tileInner(item){
     if (item.img) return `<img src="${esc(item.img)}" alt="${esc(item.name)}" onerror="this.parentElement.innerHTML=iconSvgFallback('${item.icon||'box'}')">`;
@@ -481,29 +199,10 @@
     });
   }
 
-  const DEFAULT_CATALOG = [
-    {id:'c1', cat:'Chemicals', name:'Multi-Surface Cleaner', unit:'bottles', icon:'bottle'},
-    {id:'c2', cat:'Chemicals', name:'Floor Cleaner', unit:'bottles', icon:'bottle'},
-    {id:'c3', cat:'Chemicals', name:'Glass & Window Cleaner', unit:'bottles', icon:'glass'},
-    {id:'c4', cat:'Chemicals', name:'Toilet / Washroom Cleaner', unit:'bottles', icon:'toilet'},
-    {id:'c5', cat:'Chemicals', name:'Disinfectant Spray', unit:'bottles', icon:'spraycan'},
-    {id:'c6', cat:'Chemicals', name:'Floor Degreaser', unit:'bottles', icon:'drum'},
-    {id:'c7', cat:'Chemicals', name:'Hand Soap', unit:'refills', icon:'pump'},
-    {id:'c8', cat:'Chemicals', name:'Air Freshener', unit:'cans', icon:'freshener'},
-    {id:'e1', cat:'Equipment', name:'Mop Head', unit:'pcs', icon:'mop'},
-    {id:'e2', cat:'Equipment', name:'Mop Bucket', unit:'pcs', icon:'bucket'},
-    {id:'e3', cat:'Equipment', name:'Disposable Gloves', unit:'boxes', icon:'glove'},
-    {id:'e4', cat:'Equipment', name:'Face Masks', unit:'boxes', icon:'mask'},
-    {id:'e5', cat:'Equipment', name:'Bin Liners', unit:'rolls', icon:'binbag'},
-    {id:'e6', cat:'Equipment', name:'Microfibre Cloths', unit:'packs', icon:'cloth'},
-    {id:'e7', cat:'Equipment', name:'Safety Goggles', unit:'pcs', icon:'goggles'},
-    {id:'e8', cat:'Equipment', name:'Wet Floor Sign', unit:'pcs', icon:'sign'}
-  ];
-
   let catalog = [];
-  let config = { teamName: 'Blanchardstown Cleaning Crew', adminPin: '1234' };
+  let config = { adminPin: '1234' };
   let userName = '';
-  let orders = [];
+  let orders = []; // {id, name, date, items:[{name,qty,unit,cat}]}
   let selected = {};
   let tab = 'order';
   let view = 'list'; // 'list' | 'review' | 'confirm'
@@ -513,84 +212,68 @@
   let pendingTab = 'settings';
   let lastPlacedItems = [];
   let editingId = null;
+  let dayFilter = 'all'; // 'all' or 0-6 (JS getDay: 0=Sun..6=Sat)
+
+  const DAY_CHIPS = [['all','All'],[1,'Mon'],[2,'Tue'],[3,'Wed'],[4,'Thu'],[5,'Fri'],[6,'Sat'],[0,'Sun']];
 
   const body = document.getElementById('soaBody');
   const root = document.getElementById('soaRoot');
   const titleEl = document.getElementById('soaTitle');
+  const gateEl = document.getElementById('soaGate');
 
   function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
   function toast(msg){
     const t = document.createElement('div');
     t.className = 'soa-toast';
     t.textContent = msg;
     root.appendChild(t);
-    setTimeout(()=>t.remove(), 2200);
+    setTimeout(()=>t.remove(), 2400);
   }
-
-  const gateEl = document.getElementById('soaGate');
 
   function showNameGate(){
     gateEl.style.display = 'flex';
     gateEl.innerHTML = `
       <div class="soa-gate-title">Who's ordering?</div>
       <div class="soa-gate-sub">Enter your name so orders show who they're from. You'll only need to do this once on this phone.</div>
-      <div class="soa-field">
-        <label>Your name</label>
-        <input id="soaGateName" type="text" placeholder="e.g. Priya" />
-      </div>
+      <div class="soa-field"><label>Your name</label><input id="soaGateName" type="text" placeholder="e.g. Priya" /></div>
       <button class="soa-btn soa-btn-primary" onclick="soaSubmitName()">Continue</button>
     `;
     setTimeout(()=>{ const el=document.getElementById('soaGateName'); if(el) el.focus(); }, 50);
   }
-
-  window.soaSubmitName = async function(){
+  window.soaSubmitName = function(){
     const val = document.getElementById('soaGateName').value.trim();
     if (!val) { toast('Enter your name to continue'); return; }
     userName = val;
-    await saveUserName();
-    gateEl.style.display = 'none';
-    gateEl.innerHTML = '';
+    localStorage.setItem('soa_username', userName);
+    gateEl.style.display = 'none'; gateEl.innerHTML = '';
     render();
   };
-
   window.soaChangeName = function(){
     showNameGate();
     setTimeout(()=>{ const el=document.getElementById('soaGateName'); if(el) el.value = userName; }, 0);
   };
-
   function updateWhoAmI(){
     const el = document.getElementById('soaWhoAmI');
     if (!el) return;
-    if (userName) {
-      el.innerHTML = `Ordering as: <strong>${esc(userName)}</strong> <button onclick="soaChangeName()">not you?</button>`;
-    } else {
-      el.innerHTML = '';
-    }
+    el.innerHTML = userName ? `Ordering as: <strong>${esc(userName)}</strong> <button onclick="soaChangeName()">not you?</button>` : '';
   }
 
   function showPinGate(){
     gateEl.style.display = 'flex';
     gateEl.innerHTML = `
-      <div class="soa-gate-title">Settings are locked</div>
+      <div class="soa-gate-title">Locked</div>
       <div class="soa-gate-sub">Enter the admin PIN to continue.${pinError ? '<br><span style="color:var(--danger)">'+esc(pinError)+'</span>' : ''}</div>
-      <div class="soa-field">
-        <label>Admin PIN</label>
-        <input id="soaGatePin" type="password" inputmode="numeric" placeholder="••••" />
-      </div>
+      <div class="soa-field"><label>Admin PIN</label><input id="soaGatePin" type="password" inputmode="numeric" placeholder="••••" /></div>
       <button class="soa-btn soa-btn-primary" onclick="soaSubmitPin()">Unlock</button>
       <button class="soa-btn soa-btn-outline" onclick="soaCancelPin()">Cancel</button>
     `;
     setTimeout(()=>{ const el=document.getElementById('soaGatePin'); if(el) el.focus(); }, 50);
   }
-
   window.soaSubmitPin = function(){
     const val = document.getElementById('soaGatePin').value.trim();
     if (val === (config.adminPin || '1234')) {
-      sessionAuthed = true;
-      pinError = '';
-      gateEl.style.display = 'none';
-      gateEl.innerHTML = '';
+      sessionAuthed = true; pinError = '';
+      gateEl.style.display = 'none'; gateEl.innerHTML = '';
       tab = pendingTab;
       render();
     } else {
@@ -598,54 +281,10 @@
       showPinGate();
     }
   };
-
   window.soaCancelPin = function(){
-    pinError = '';
-    gateEl.style.display = 'none';
-    gateEl.innerHTML = '';
-    tab = 'order';
-    render();
+    pinError = ''; gateEl.style.display = 'none'; gateEl.innerHTML = '';
+    tab = 'order'; render();
   };
-
-  async function loadAll(){
-    try {
-      const c = await window.storage.get('catalog', true);
-      catalog = c ? JSON.parse(c.value) : DEFAULT_CATALOG;
-    } catch(e){ catalog = DEFAULT_CATALOG; }
-    if (!catalog.length) catalog = DEFAULT_CATALOG;
-    catalog.forEach(i => { if (!i.icon) i.icon = 'box'; });
-
-    try {
-      const cfg = await window.storage.get('config', true);
-      if (cfg) config = Object.assign({teamName:'Blanchardstown Cleaning Crew', adminPin:'1234'}, JSON.parse(cfg.value));
-    } catch(e){}
-
-    try {
-      const ord = await window.storage.get('orders', true);
-      orders = ord ? JSON.parse(ord.value) : [];
-    } catch(e){ orders = []; }
-
-    try {
-      const un = await window.storage.get('username', false);
-      if (un) userName = un.value;
-    } catch(e){}
-
-    ready = true;
-    if (!userName) { showNameGate(); } else { render(); }
-  }
-
-  async function saveCatalog(){
-    try { await window.storage.set('catalog', JSON.stringify(catalog), true); } catch(e){ toast('Could not save list'); }
-  }
-  async function saveConfig(){
-    try { await window.storage.set('config', JSON.stringify(config), true); } catch(e){ toast('Could not save settings'); }
-  }
-  async function saveOrders(){
-    try { await window.storage.set('orders', JSON.stringify(orders), true); } catch(e){ toast('Could not save order'); }
-  }
-  async function saveUserName(){
-    try { await window.storage.set('username', userName, false); } catch(e){}
-  }
 
   window.soaSetTab = function(t){
     if ((t === 'settings' || t === 'history') && !sessionAuthed) {
@@ -658,10 +297,58 @@
     render();
   };
 
+  // ---------- DATA LAYER (Supabase) ----------
+  async function loadAll(){
+    userName = localStorage.getItem('soa_username') || '';
+
+    const { data: catRows, error: catErr } = await sb.from('catalog').select('*').order('cat').order('name');
+    if (catErr) { toast('Could not load item list'); }
+    catalog = catRows || [];
+    catalog.forEach(i => { if (!i.icon) i.icon = 'box'; });
+
+    const { data: cfgRow } = await sb.from('app_config').select('*').eq('id', 1).single();
+    if (cfgRow) config = { adminPin: cfgRow.admin_pin || '1234' };
+
+    const { data: ordRows, error: ordErr } = await sb.from('orders').select('*').order('order_date', { ascending: false }).limit(500);
+    if (ordErr) { toast('Could not load order history'); }
+    orders = (ordRows || []).map(r => ({ id: r.id, name: r.employee_name, date: r.order_date, items: r.items || [] }));
+
+    ready = true;
+    if (!userName) { showNameGate(); } else { render(); }
+  }
+
+  async function saveOrder(items){
+    const { error } = await sb.from('orders').insert({ employee_name: userName || 'Unnamed', items });
+    if (error) { toast('Could not save order — check your connection'); return false; }
+    return true;
+  }
+  async function insertCatalogItem(item){
+    const { error } = await sb.from('catalog').insert(item);
+    if (error) { toast('Could not save item'); return false; }
+    return true;
+  }
+  async function updateCatalogItem(id, patch){
+    const { error } = await sb.from('catalog').update(patch).eq('id', id);
+    if (error) { toast('Could not update item'); return false; }
+    return true;
+  }
+  async function deleteCatalogItem(id){
+    const { error } = await sb.from('catalog').delete().eq('id', id);
+    if (error) { toast('Could not remove item'); return false; }
+    return true;
+  }
+  async function saveAdminPin(pin){
+    const { error } = await sb.from('app_config').update({ admin_pin: pin }).eq('id', 1);
+    if (error) { toast('Could not save PIN'); return false; }
+    return true;
+  }
+
+  // ---------- ORDER TAB ----------
   function renderOrderList(){
     titleEl.textContent = 'Supply Order';
     const cats = [...new Set(catalog.map(i=>i.cat))];
     let html = '';
+    if (!catalog.length) html = '<div class="soa-empty">No items yet. Add some in Settings.</div>';
     cats.forEach(cat => {
       html += `<div class="soa-section-title">${esc(cat)}</div>`;
       catalog.filter(i=>i.cat===cat).forEach(item => {
@@ -669,9 +356,7 @@
         html += `
           <div class="soa-item ${qty>0?'selected':''}">
             <div class="soa-icon-tile">${tileInner(item)}</div>
-            <div class="soa-item-name" onclick="soaToggle('${item.id}')">
-              ${esc(item.name)}<span class="unit">${esc(item.unit)}</span>
-            </div>
+            <div class="soa-item-name" onclick="soaToggle('${item.id}')">${esc(item.name)}<span class="unit">${esc(item.unit)}</span></div>
             <div class="soa-qty">
               <button onclick="soaDec('${item.id}')">−</button>
               <div class="soa-qty-val">${qty}</div>
@@ -682,33 +367,18 @@
     });
     body.innerHTML = html;
     const n = Object.keys(selected).filter(k=>selected[k]>0).length;
-    let cta = document.getElementById('soaCta');
-    if (cta) cta.remove();
+    const old = document.getElementById('soaCta'); if (old) old.remove();
     if (n > 0) {
-      cta = document.createElement('button');
-      cta.id = 'soaCta';
-      cta.className = 'soa-cta';
+      const cta = document.createElement('button');
+      cta.id = 'soaCta'; cta.className = 'soa-cta';
       cta.innerHTML = `Review Order <span class="count-badge">${n} item${n>1?'s':''}</span>`;
       cta.onclick = () => { view='review'; render(); };
       root.appendChild(cta);
     }
   }
-
-  window.soaToggle = function(id){
-    if (selected[id]) delete selected[id];
-    else selected[id] = 1;
-    render();
-  };
-  window.soaInc = function(id){
-    selected[id] = (selected[id]||0) + 1;
-    render();
-  };
-  window.soaDec = function(id){
-    if (!selected[id]) return;
-    selected[id] -= 1;
-    if (selected[id] <= 0) delete selected[id];
-    render();
-  };
+  window.soaToggle = function(id){ if (selected[id]) delete selected[id]; else selected[id] = 1; render(); };
+  window.soaInc = function(id){ selected[id] = (selected[id]||0) + 1; render(); };
+  window.soaDec = function(id){ if (!selected[id]) return; selected[id] -= 1; if (selected[id] <= 0) delete selected[id]; render(); };
 
   function renderReview(){
     titleEl.textContent = 'Review Order';
@@ -716,23 +386,18 @@
       const item = catalog.find(i=>i.id===id);
       return `<div class="soa-review-row"><div class="soa-icon-tile small">${tileInner(item)}</div><span class="name">${esc(item.name)}</span><span class="qty">${selected[id]} ${esc(item.unit)}</span></div>`;
     }).join('');
-
     body.innerHTML = `
       <button class="soa-back" onclick="soaBackToList()">← Back to list</button>
-      <div class="soa-field">
-        <label>Your name</label>
-        <input id="soaNameInput" type="text" placeholder="e.g. Aravinth" value="${esc(userName)}" />
-      </div>
+      <div class="soa-field"><label>Your name</label><input id="soaNameInput" type="text" placeholder="e.g. Aravinth" value="${esc(userName)}" /></div>
       ${rows}
       <div style="height:16px"></div>
       <button class="soa-btn soa-btn-primary" onclick="soaPlaceOrder()">Place Order</button>
     `;
     document.getElementById('soaNameInput').addEventListener('input', (e) => {
       userName = e.target.value;
-      saveUserName();
+      localStorage.setItem('soa_username', userName);
     });
   }
-
   window.soaBackToList = function(){ view = 'list'; render(); };
 
   window.soaPlaceOrder = async function(){
@@ -740,8 +405,10 @@
       const item = catalog.find(i=>i.id===id);
       return { name: item.name, qty: selected[id], unit: item.unit, cat: item.cat };
     });
+    const btn = event && event.target; if (btn) btn.disabled = true;
+    const ok = await saveOrder(items);
+    if (!ok) { if (btn) btn.disabled = false; return; }
     orders.unshift({ name: userName || 'Unnamed', date: new Date().toISOString(), items });
-    await saveOrders();
     lastPlacedItems = items;
     selected = {};
     view = 'confirm';
@@ -755,22 +422,18 @@
       <div class="soa-confirm">
         <div class="soa-confirm-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
         <div class="soa-confirm-title">Order Placed</div>
-        <div class="soa-confirm-sub">Logged for ${esc(userName)}. Your supervisor can see it under History.</div>
+        <div class="soa-confirm-sub">Saved for ${esc(userName)}. It's now in History for everyone with the PIN.</div>
         <div class="soa-confirm-list">${rows}</div>
         <button class="soa-btn soa-btn-secondary" onclick="soaNewOrder()">Place Another Order</button>
-      </div>
-    `;
+      </div>`;
   }
+  window.soaNewOrder = function(){ view = 'list'; tab = 'order'; render(); };
 
-  window.soaNewOrder = function(){
-    view = 'list'; tab = 'order';
-    render();
-  };
-
-  function computeTotals(){
+  // ---------- HISTORY TAB ----------
+  function computeTotals(filteredOrders){
     const map = {};
     catalog.forEach(i => { map[i.name] = { name: i.name, unit: i.unit, cat: i.cat, icon: i.icon, img: i.img, qty: 0 }; });
-    orders.forEach(o => {
+    filteredOrders.forEach(o => {
       o.items.forEach(i => {
         if (!map[i.name]) map[i.name] = { name: i.name, unit: i.unit, cat: i.cat || 'Other', icon: 'box', qty: 0 };
         map[i.name].qty += i.qty;
@@ -779,10 +442,24 @@
     return Object.values(map).sort((a,b) => (a.cat||'').localeCompare(b.cat||'') || a.name.localeCompare(b.name));
   }
 
+  window.soaSetDayFilter = function(d){
+    dayFilter = d === 'all' ? 'all' : Number(d);
+    render();
+  };
+
   function renderHistory(){
     titleEl.textContent = 'Order History';
-    const totals = computeTotals();
-    let html = `<div class="soa-section-title">Total Ordered (all time)</div>`;
+    const filtered = dayFilter === 'all' ? orders : orders.filter(o => new Date(o.date).getDay() === dayFilter);
+    const dayLabel = DAY_CHIPS.find(([v]) => v === dayFilter)[1];
+
+    let html = `<div class="soa-daychips">`;
+    DAY_CHIPS.forEach(([v,l]) => {
+      html += `<button class="soa-daychip ${dayFilter===v?'active':''}" onclick="soaSetDayFilter('${v}')">${l}</button>`;
+    });
+    html += `</div>`;
+
+    html += `<div class="soa-section-title">Total Ordered ${dayFilter==='all' ? '(all time)' : '(every ' + dayLabel + ')'}</div>`;
+    const totals = computeTotals(filtered);
     let curCat = null;
     totals.forEach(t => {
       if (t.cat !== curCat) { curCat = t.cat; html += `<div style="font-size:11.5px;font-weight:600;color:var(--ink-soft);margin:8px 4px 4px;">${esc(curCat||'Other')}</div>`; }
@@ -794,20 +471,17 @@
         </div>`;
     });
 
-    html += `<div class="soa-section-title">Recent Orders</div>`;
-    if (!orders.length) {
-      html += `<div class="soa-empty">No orders placed yet.</div>`;
+    html += `<div class="soa-section-title">Orders${dayFilter==='all' ? '' : ' on ' + dayLabel + 's'}</div>`;
+    if (!filtered.length) {
+      html += `<div class="soa-empty">No orders ${dayFilter==='all' ? 'placed yet' : 'on a ' + dayLabel + ' yet'}.</div>`;
     } else {
-      orders.slice(0, 60).forEach(o => {
+      filtered.slice(0, 80).forEach(o => {
         const d = new Date(o.date);
-        const dateStr = d.toLocaleDateString('en-IE', {day:'2-digit', month:'short'}) + ' · ' + d.toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'});
+        const dateStr = d.toLocaleDateString('en-IE', {weekday:'short', day:'2-digit', month:'short'}) + ' · ' + d.toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'});
         const itemsStr = o.items.map(i => `${i.name} (${i.qty} ${i.unit})`).join(', ');
         html += `
           <div class="soa-order-card">
-            <div class="soa-order-head">
-              <span class="soa-order-name">${esc(o.name)}</span>
-              <span class="soa-order-date">${dateStr}</span>
-            </div>
+            <div class="soa-order-head"><span class="soa-order-name">${esc(o.name)}</span><span class="soa-order-date">${dateStr}</span></div>
             <div class="soa-order-items">${esc(itemsStr)}</div>
           </div>`;
       });
@@ -815,13 +489,11 @@
     body.innerHTML = html;
   }
 
+  // ---------- SETTINGS TAB ----------
   function renderSettings(){
     titleEl.textContent = 'Settings';
     body.innerHTML = `
-      <div class="soa-field">
-        <label>Admin PIN (protects this Settings screen)</label>
-        <input id="soaPin" type="text" placeholder="4-digit PIN" value="${esc(config.adminPin || '1234')}" />
-      </div>
+      <div class="soa-field"><label>Admin PIN (protects Settings & History)</label><input id="soaPin" type="text" placeholder="4-digit PIN" value="${esc(config.adminPin || '1234')}" /></div>
       <button class="soa-btn soa-btn-secondary" onclick="soaSaveSettings()">Save PIN</button>
 
       <div class="soa-section-title">Item List</div>
@@ -829,21 +501,14 @@
       <div class="soa-field" style="margin-top:8px;">
         <label>Add item</label>
         <input id="soaNewName" type="text" placeholder="Item name" style="margin-bottom:8px;" />
-        <select id="soaNewCat" style="margin-bottom:8px;">
-          <option>Chemicals</option>
-          <option>Equipment</option>
-        </select>
+        <select id="soaNewCat" style="margin-bottom:8px;"><option>Chemicals</option><option>Equipment</option></select>
         <input id="soaNewUnit" type="text" placeholder="Unit (e.g. bottles, pcs)" style="margin-bottom:8px;" />
         <input id="soaNewImg" type="text" placeholder="Image URL (optional)" style="margin-bottom:8px;" />
-        <label style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-soft);display:block;margin-bottom:5px;">Or take/upload a photo</label>
+        <label style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-soft);display:block;margin-bottom:5px;">Or take/upload a photo</label>
         <input id="soaNewImgFile" type="file" accept="image/*" capture="environment" style="margin-bottom:8px;width:100%;" />
-        <select id="soaNewIcon">
-          ${ICON_LABELS.map(([k,l]) => `<option value="${k}">${l}</option>`).join('')}
-        </select>
+        <select id="soaNewIcon">${ICON_LABELS.map(([k,l]) => `<option value="${k}">${l}</option>`).join('')}</select>
       </div>
-      <div style="font-size:11.5px;color:var(--ink-soft);margin:-4px 0 12px;line-height:1.5;">
-        A photo you take overrides the link above. Leave both blank to use a plain icon instead.
-      </div>
+      <div style="font-size:11.5px;color:var(--ink-soft);margin:-4px 0 12px;line-height:1.5;">A photo you take overrides the link above. Leave both blank to use a plain icon instead.</div>
       <button class="soa-btn soa-btn-outline" onclick="soaAddItem()">+ Add to list</button>
     `;
     renderManageList();
@@ -862,40 +527,30 @@
         </div>`;
       const panel = editingId === item.id ? `
         <div class="soa-edit-panel">
-          <div class="soa-field">
-            <label>Image URL</label>
-            <input id="soaEditImg-${item.id}" type="text" placeholder="Paste a photo link" value="${esc(item.img && item.img.startsWith('data:') ? '' : (item.img||''))}" />
-          </div>
-          <div class="soa-field">
-            <label>Or take/upload a photo</label>
-            <input id="soaEditImgFile-${item.id}" type="file" accept="image/*" capture="environment" style="width:100%;" />
-          </div>
+          <div class="soa-field"><label>Image URL</label><input id="soaEditImg-${item.id}" type="text" placeholder="Paste a photo link" value="${esc(item.img && item.img.startsWith('data:') ? '' : (item.img||''))}" /></div>
+          <div class="soa-field"><label>Or take/upload a photo</label><input id="soaEditImgFile-${item.id}" type="file" accept="image/*" capture="environment" style="width:100%;" /></div>
           <button class="soa-btn soa-btn-secondary" style="margin-bottom:0;" onclick="soaSaveEditItem('${item.id}')">Save Photo</button>
         </div>` : '';
       return row + panel;
     }).join('');
   }
 
-  window.soaEditItem = function(id){
-    editingId = editingId === id ? null : id;
-    renderManageList();
-  };
+  window.soaEditItem = function(id){ editingId = editingId === id ? null : id; renderManageList(); };
 
   window.soaSaveEditItem = async function(id){
     const item = catalog.find(i => i.id === id);
     if (!item) return;
     const fileInput = document.getElementById('soaEditImgFile-'+id);
     const urlVal = document.getElementById('soaEditImg-'+id).value.trim();
+    let img = item.img;
     if (fileInput && fileInput.files && fileInput.files[0]) {
-      try {
-        item.img = await resizeImageFile(fileInput.files[0], 420);
-      } catch(e) { toast('Could not read that photo'); return; }
-    } else if (urlVal) {
-      item.img = urlVal;
-    } else {
-      delete item.img;
-    }
-    await saveCatalog();
+      try { img = await resizeImageFile(fileInput.files[0], 420); }
+      catch(e) { toast('Could not read that photo'); return; }
+    } else if (urlVal) { img = urlVal; }
+    else { img = null; }
+    const ok = await updateCatalogItem(id, { img });
+    if (!ok) return;
+    item.img = img;
     editingId = null;
     renderManageList();
     toast('Photo updated');
@@ -903,8 +558,10 @@
 
   window.soaSaveSettings = async function(){
     const pinVal = document.getElementById('soaPin').value.trim();
-    if (pinVal) config.adminPin = pinVal;
-    await saveConfig();
+    if (!pinVal) return;
+    const ok = await saveAdminPin(pinVal);
+    if (!ok) return;
+    config.adminPin = pinVal;
     toast('Settings saved');
   };
 
@@ -918,41 +575,52 @@
     if (!name) { toast('Enter an item name'); return; }
     const newItem = { id: 'i' + Date.now(), cat, name, unit, icon };
     if (fileInput && fileInput.files && fileInput.files[0]) {
-      try {
-        newItem.img = await resizeImageFile(fileInput.files[0], 420);
-      } catch(e) { toast('Could not read that photo'); }
-    } else if (urlVal) {
-      newItem.img = urlVal;
-    }
+      try { newItem.img = await resizeImageFile(fileInput.files[0], 420); }
+      catch(e) { toast('Could not read that photo'); }
+    } else if (urlVal) { newItem.img = urlVal; }
+    const ok = await insertCatalogItem(newItem);
+    if (!ok) return;
     catalog.push(newItem);
-    await saveCatalog();
     renderSettings();
     toast('Item added');
   };
 
   window.soaRemoveItem = async function(id){
+    const ok = await deleteCatalogItem(id);
+    if (!ok) return;
     catalog = catalog.filter(i => i.id !== id);
-    await saveCatalog();
     renderManageList();
   };
 
+  // ---------- ROUTER ----------
   function render(){
     if (!ready) { body.innerHTML = '<div class="soa-empty">Loading…</div>'; return; }
     updateWhoAmI();
     document.querySelectorAll('.soa-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-    const oldCta = document.getElementById('soaCta');
-    if (oldCta) oldCta.remove();
+    const oldCta = document.getElementById('soaCta'); if (oldCta) oldCta.remove();
     if (tab === 'order') {
       if (view === 'confirm') renderConfirm();
       else if (view === 'review') renderReview();
       else renderOrderList();
-    } else if (tab === 'history') {
-      renderHistory();
-    } else if (tab === 'settings') {
-      renderSettings();
-    }
+    } else if (tab === 'history') { renderHistory(); }
+    else if (tab === 'settings') { renderSettings(); }
   }
 
-  loadAll();
+  if (NOT_CONFIGURED) {
+    body.innerHTML = `
+      <div class="soa-setup">
+        <strong>Almost there.</strong><br><br>
+        This app needs a Supabase database connected before it can save orders.<br><br>
+        1. Create a free project at supabase.com<br>
+        2. Run the setup SQL (from the chat) in the SQL Editor<br>
+        3. Copy your Project URL and anon public key from <em>Settings → API</em><br>
+        4. Paste them into <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> near the top of this file's code<br>
+        5. Re-deploy to Vercel
+      </div>`;
+  } else {
+    loadAll();
+  }
 })();
 </script>
+</body>
+</html>
