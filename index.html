@@ -83,7 +83,7 @@
   .soa-manage-row .mname { flex: 1; }
   .soa-manage-row .del { color: var(--danger); background: none; border: none; font-size: 13px; font-weight: 600; cursor: pointer; }
   .soa-back { background: none; border: none; color: var(--ink-soft); font-weight: 600; font-size: 12.5px; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; padding: 4px 0 12px; display: flex; align-items: center; gap: 4px; }
-  .soa-toast { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 9px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,0.2); z-index: 50; }
+  .soa-toast { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 9px 16px; border-radius: 14px; font-size: 12.5px; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,0.2); z-index: 50; max-width: 88%; text-align: center; line-height: 1.4; cursor: pointer; }
   .soa-gate { position: absolute; inset: 0; background: var(--bg); z-index: 40; flex-direction: column; justify-content: center; padding: 28px 24px; }
   .soa-gate-title { font-weight: 700; font-size: 20px; margin-bottom: 6px; }
   .soa-gate-sub { font-size: 13px; color: var(--ink-soft); margin-bottom: 18px; line-height: 1.5; }
@@ -135,8 +135,8 @@
 (function(){
   // ============================================================
   // PASTE YOUR SUPABASE PROJECT DETAILS HERE (Settings > API in Supabase)
-  const SUPABASE_URL = 'https://idarxuucuqwbuhujwyja.supabase.co/rest/v1/';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkYXJ4dXVjdXF3YnVodWp3eWphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5NTk5NjYsImV4cCI6MjEwMjUzNTk2Nn0.alkbhXGiKRx2kuxkaSzOBz6uG9eFvE-XP75QPX8zWhc';
+  const SUPABASE_URL = 'https://idarxuucuqwbuhujwyja.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_woee5w6m7egPWydC6kDrYA_BJv3NmYU';
   // ============================================================
 
   const NOT_CONFIGURED = !SUPABASE_URL || SUPABASE_URL.indexOf('PASTE_YOUR') > -1;
@@ -223,11 +223,13 @@
 
   function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function toast(msg){
+    const old = root.querySelector('.soa-toast'); if (old) old.remove();
     const t = document.createElement('div');
     t.className = 'soa-toast';
     t.textContent = msg;
+    t.onclick = () => t.remove();
     root.appendChild(t);
-    setTimeout(()=>t.remove(), 2400);
+    setTimeout(()=>t.remove(), 5000);
   }
 
   function showNameGate(){
@@ -319,27 +321,27 @@
 
   async function saveOrder(items){
     const { error } = await sb.from('orders').insert({ employee_name: userName || 'Unnamed', items });
-    if (error) { toast('Could not save order — check your connection'); return false; }
+    if (error) { toast('Order not saved: ' + (error.message || 'unknown error')); return false; }
     return true;
   }
   async function insertCatalogItem(item){
     const { error } = await sb.from('catalog').insert(item);
-    if (error) { toast('Could not save item'); return false; }
+    if (error) { toast('Item not saved: ' + (error.message || 'unknown error')); return false; }
     return true;
   }
   async function updateCatalogItem(id, patch){
     const { error } = await sb.from('catalog').update(patch).eq('id', id);
-    if (error) { toast('Could not update item'); return false; }
+    if (error) { toast('Update failed: ' + (error.message || 'unknown error')); return false; }
     return true;
   }
   async function deleteCatalogItem(id){
     const { error } = await sb.from('catalog').delete().eq('id', id);
-    if (error) { toast('Could not remove item'); return false; }
+    if (error) { toast('Remove failed: ' + (error.message || 'unknown error')); return false; }
     return true;
   }
   async function saveAdminPin(pin){
     const { error } = await sb.from('app_config').update({ admin_pin: pin }).eq('id', 1);
-    if (error) { toast('Could not save PIN'); return false; }
+    if (error) { toast('PIN not saved: ' + (error.message || 'unknown error')); return false; }
     return true;
   }
 
@@ -505,7 +507,8 @@
         <input id="soaNewUnit" type="text" placeholder="Unit (e.g. bottles, pcs)" style="margin-bottom:8px;" />
         <input id="soaNewImg" type="text" placeholder="Image URL (optional)" style="margin-bottom:8px;" />
         <label style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-soft);display:block;margin-bottom:5px;">Or take/upload a photo</label>
-        <input id="soaNewImgFile" type="file" accept="image/*" capture="environment" style="margin-bottom:8px;width:100%;" />
+        <input id="soaNewImgFile" type="file" accept="image/*" capture="environment" style="margin-bottom:4px;width:100%;" onchange="soaShowFileName('soaNewImgFile','soaNewImgFileName')" />
+        <div id="soaNewImgFileName" style="font-size:11.5px;margin-bottom:8px;"></div>
         <select id="soaNewIcon">${ICON_LABELS.map(([k,l]) => `<option value="${k}">${l}</option>`).join('')}</select>
       </div>
       <div style="font-size:11.5px;color:var(--ink-soft);margin:-4px 0 12px;line-height:1.5;">A photo you take overrides the link above. Leave both blank to use a plain icon instead.</div>
@@ -528,14 +531,47 @@
       const panel = editingId === item.id ? `
         <div class="soa-edit-panel">
           <div class="soa-field"><label>Image URL</label><input id="soaEditImg-${item.id}" type="text" placeholder="Paste a photo link" value="${esc(item.img && item.img.startsWith('data:') ? '' : (item.img||''))}" /></div>
-          <div class="soa-field"><label>Or take/upload a photo</label><input id="soaEditImgFile-${item.id}" type="file" accept="image/*" capture="environment" style="width:100%;" /></div>
-          <button class="soa-btn soa-btn-secondary" style="margin-bottom:0;" onclick="soaSaveEditItem('${item.id}')">Save Photo</button>
+          <div class="soa-field">
+            <label>Or take/upload a photo</label>
+            <input id="soaEditImgFile-${item.id}" type="file" accept="image/*" capture="environment" style="width:100%;margin-bottom:4px;" onchange="soaShowFileName('soaEditImgFile-${item.id}','soaEditImgFileName-${item.id}')" />
+            <div id="soaEditImgFileName-${item.id}" style="font-size:11.5px;"></div>
+          </div>
+          <button class="soa-btn soa-btn-secondary" style="margin-bottom:8px;" onclick="soaSaveEditItem('${item.id}')">Save Photo</button>
+          ${item.img ? `<button class="soa-btn soa-btn-outline" style="margin-bottom:0;color:var(--danger);" onclick="soaRemovePhoto('${item.id}')">Remove Photo (use icon instead)</button>` : ''}
         </div>` : '';
       return row + panel;
     }).join('');
   }
 
+  window.soaShowFileName = function(inputId, targetId){
+    const inp = document.getElementById(inputId);
+    const target = document.getElementById(targetId);
+    if (!inp || !target) return;
+    if (inp.files && inp.files[0]) {
+      target.innerHTML = `Selected: ${esc(inp.files[0].name)} <button type="button" onclick="soaClearFile('${inputId}','${targetId}')" style="background:none;border:none;color:var(--danger);font-weight:600;cursor:pointer;padding:0;">✕ Cancel</button>`;
+    } else {
+      target.innerHTML = '';
+    }
+  };
+  window.soaClearFile = function(inputId, targetId){
+    const inp = document.getElementById(inputId);
+    const target = document.getElementById(targetId);
+    if (inp) inp.value = '';
+    if (target) target.innerHTML = '';
+  };
+
   window.soaEditItem = function(id){ editingId = editingId === id ? null : id; renderManageList(); };
+
+  window.soaRemovePhoto = async function(id){
+    const item = catalog.find(i => i.id === id);
+    if (!item) return;
+    const ok = await updateCatalogItem(id, { img: null });
+    if (!ok) return;
+    item.img = null;
+    editingId = null;
+    renderManageList();
+    toast('Photo removed');
+  };
 
   window.soaSaveEditItem = async function(id){
     const item = catalog.find(i => i.id === id);
